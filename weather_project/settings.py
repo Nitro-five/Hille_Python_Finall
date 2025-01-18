@@ -98,14 +98,22 @@ WSGI_APPLICATION = 'weather_project.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', 'postgresql://postgres:jMuQovCYyJySSdCgPWAsBHLVcGtwxImA@postgres.railway.internal:5432/railway')
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'railway',
+        'USER': 'postgres',
+        'PASSWORD': 'jMuQovCYyJySSdCgPWAsBHLVcGtwxImA',
+        'HOST': 'roundhouse.proxy.rlwy.net',
+        'PORT': '53420',
+    }
 }
+
 
 CSRF_TRUSTED_ORIGINS = [
     'https://hillepythonfinall-production.up.railway.app',
 ]
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
