@@ -99,7 +99,7 @@ WSGI_APPLICATION = 'weather_project.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', 'postgres://weather_user:password@localhost:5432/weather_db')
+        default=os.getenv('DATABASE_URL', 'postgresql://postgres:jMuQovCYyJySSdCgPWAsBHLVcGtwxImA@postgres.railway.internal:5432/railway')
     )
 }
 
