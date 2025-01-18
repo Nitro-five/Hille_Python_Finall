@@ -23,7 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-*!klstx@+1=jt*qgwy3=l@+8df89)hcp2t6=6kmw(q^ob@xv_o'
+load_dotenv()
+
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'default_secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 load_dotenv()
@@ -33,7 +35,7 @@ WEATHER_API_KEY = os.getenv('WEATHER_API_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['weather_project.herokuapp.com','127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['*']
 
 ASGI_APPLICATION = 'weather_project.asgi.application'
 
@@ -41,10 +43,11 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [('127.0.0.1', 6379)],
+            'hosts': [os.getenv('REDIS_URL', 'redis://127.0.0.1:6379')],
         },
     },
 }
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -96,9 +99,10 @@ WSGI_APPLICATION = 'weather_project.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgres://weather_user:1111@localhost:5432/weather_db'
+        default=os.getenv('DATABASE_URL', 'postgres://weather_user:password@localhost:5432/weather_db')
     )
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
