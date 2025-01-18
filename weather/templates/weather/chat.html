@@ -1,0 +1,61 @@
+{% extends 'weather/base.html' %}
+
+{% block title %}Чат{% endblock %}
+
+{% block content %}
+<h2>Чат</h2>
+
+<div id="chat-box" style="border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll;">
+    {% for message in messages %}
+    <div class="chat-message">
+        <strong>{{ message.user.username }}:</strong>
+        <p>{{ message.message }}</p>
+        <small>{{ message.created_at }}</small>
+    </div>
+    {% endfor %}
+</div>
+
+<form method="POST" id="chat-form">
+    {% csrf_token %}
+    <textarea name="message" class="form-control" placeholder="Введите ваше сообщение..." required></textarea>
+    <button type="submit" class="btn btn-primary mt-2">Отправить</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Устанавливаем соединение с WebSocket
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/'
+    );
+
+    // Обработка входящих сообщений
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const chatBox = document.getElementById('chat-box');
+        const message = `
+            <div class="chat-message">
+                <strong>${data.username}:</strong>
+                <p>${data.message}</p>
+                <small>${new Date().toLocaleString()}</small>
+            </div>
+        `;
+        chatBox.innerHTML += message;
+        chatBox.scrollTop = chatBox.scrollHeight; // Прокручиваем вниз
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    // Отправка сообщения
+    document.querySelector('#chat-form').onsubmit = function(e) {
+        e.preventDefault();
+        const messageInput = document.querySelector('textarea[name="message"]');
+        chatSocket.send(JSON.stringify({
+            'message': messageInput.value
+        }));
+        messageInput.value = ''; // Очистка поля после отправки
+    };
+</script>
+{% endblock %}

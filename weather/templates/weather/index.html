@@ -1,0 +1,39 @@
+{% extends 'weather/base.html' %}
+
+{% block title %}Погода{% endblock %}
+
+{% block content %}
+<h2>Погода</h2>
+<form method="POST" class="mb-4">
+    {% csrf_token %}
+    <div class="mb-3">
+        <input type="text" name="city" class="form-control" placeholder="Введите город" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Показать погоду</button>
+</form>
+
+{% if weather %}
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title">Погода в {{ weather.location.name }}, {{ weather.location.country }}</h3>
+        <p>Обновлено: {{ weather.current.last_updated }}</p>
+        <p>Температура: {{ weather.current.temp_c }}°C</p>
+        <p>Ощущается как: {{ weather.current.feelslike_c }}°C</p>
+        <p>Состояние: {{ weather.current.condition.text }}</p>
+        <img src="{{ weather.current.condition.icon }}" alt="Weather Icon">
+        <p>Ветер: {{ weather.current.wind_kph }} км/ч ({{ weather.current.wind_dir }})</p>
+        <p>Давление: {{ weather.current.pressure_mb }} мБар</p>
+        <p>Влажность: {{ weather.current.humidity }}%</p>
+        <p>Видимость: {{ weather.current.vis_km }} км</p>
+        <form method="post" action="{% url 'add_favorite' %}">
+            {% csrf_token %}
+            <input type="hidden" name="city_name" value="{{ weather.location.name }}">
+            <button type="submit" class="btn btn-primary">Добавить в избранное</button>
+        </form>
+
+    </div>
+</div>
+{% elif error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+{% endblock %}
