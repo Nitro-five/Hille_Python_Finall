@@ -135,7 +135,7 @@ proto-plus==1.25.0
 protobuf==5.28.3
 psutil==6.0.0
 psycopg==3.2.1
-psycopg-binary==3.2.1
+psycopg-binary==3.2.4
 psycopg2-binary==2.9.10
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
