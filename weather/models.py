@@ -1,9 +1,18 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import CASCADE
 
 
 class FavoriteCity(models.Model):
+    """
+    Модель для сохранения любимых городов пользователя.
+
+    Атрибуты:
+        user (ForeignKey): Связь с моделью User, указывающая на пользователя.
+        city_name (CharField): Название города.
+
+    Методы:
+        __str__: Возвращает строковое представление города и имени пользователя.
+    """
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_cities')
     city_name = models.CharField(max_length=100)
 
@@ -12,6 +21,20 @@ class FavoriteCity(models.Model):
 
 
 class ChatMessage(models.Model):
+    """
+    Модель для хранения сообщений чата.
+
+    Атрибуты:
+        user (ForeignKey): Связь с моделью User, указывающая на пользователя, отправившего сообщение.
+        message (TextField): Текст сообщения.
+        created_at (DateTimeField): Время создания сообщения.
+
+    Методы:
+        __str__: Возвращает строковое представление сообщения и имени пользователя.
+
+    Классы:
+        Meta: Определяет порядок сортировки сообщений по времени создания.
+    """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)

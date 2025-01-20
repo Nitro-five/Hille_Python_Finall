@@ -3,6 +3,15 @@
 {% block title %}Погода{% endblock %}
 
 {% block content %}
+<!-- Блок для вывода сообщений -->
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li class="alert alert-success">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
 <h2>Погода</h2>
 <form method="POST" class="mb-4">
     {% csrf_token %}
@@ -30,7 +39,6 @@
             <input type="hidden" name="city_name" value="{{ weather.location.name }}">
             <button type="submit" class="btn btn-primary">Добавить в избранное</button>
         </form>
-
     </div>
 </div>
 {% elif error %}

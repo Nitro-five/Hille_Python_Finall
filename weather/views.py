@@ -4,11 +4,23 @@ from django.contrib.auth.decorators import login_required
 from .forms import UserRegistrationForm
 import requests
 from django.conf import settings
-from django.http import JsonResponse
+from django.contrib import messages
 from .models import FavoriteCity, ChatMessage
 
 
 def register_view(request):
+    """
+    Обрабатывает регистрацию нового пользователя.
+
+    При POST-запросе создает нового пользователя, а затем сразу авторизует его.
+    При успешной регистрации выполняется редирект на страницу погоды.
+
+    Параметры:
+        request (HttpRequest): Запрос пользователя.
+
+    Возвращает:
+        HttpResponse: Отображает форму регистрации.
+    """
     if request.method == "POST":
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
@@ -21,6 +33,18 @@ def register_view(request):
 
 
 def login_view(request):
+    """
+    Обрабатывает процесс авторизации пользователя.
+
+    При POST-запросе проверяет имя пользователя и пароль. Если они правильные,
+    то авторизует пользователя и перенаправляет на страницу погоды.
+
+    Параметры:
+        request (HttpRequest): Запрос пользователя.
+
+    Возвращает:
+        HttpResponse: Отображает форму авторизации или редирект на страницу погоды.
+    """
     if request.method == "POST":
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -34,52 +58,100 @@ def login_view(request):
 
 
 def logout_view(request):
+    """
+    Обрабатывает выход пользователя из системы.
+
+    Осуществляет выход из системы и редиректит на страницу авторизации.
+
+    Параметры:
+        request (HttpRequest): Запрос пользователя.
+
+    Возвращает:
+        HttpResponse: Редирект на страницу авторизации.
+    """
     logout(request)
     return redirect('login')
 
 
 @login_required
 def favorite_cities_view(request):
+    """
+    Отображает список любимых городов пользователя.
+
+    Доступно только авторизованным пользователям.
+
+    Параметры:
+        request (HttpRequest): Запрос пользователя.
+
+    Возвращает:
+        HttpResponse: Отображает список избранных городов.
+    """
     favorites = request.user.favorite_cities.all()
     return render(request, 'weather/favorites.html', {'favorites': favorites})
 
 
 @login_required
 def add_favorite_city(request):
+    """
+    Добавляет новый город в список избранных для авторизованного пользователя.
+
+    При POST-запросе проверяет, существует ли уже такой город в списке избранных.
+    Если нет — добавляет его.
+
+    Параметры:
+        request (HttpRequest): Запрос пользователя.
+
+    Возвращает:
+        JsonResponse: Ответ с результатом добавления города.
+    """
     if request.method == "POST":
         city_name = request.POST.get('city_name', '').strip()
-        print(f"Received city_name: {city_name}")
-        print(f"Request POST data: {request.POST}")
 
         if city_name:
             # Попробуем добавить в избранное, если такого города еще нет
             favorite_city, created = FavoriteCity.objects.get_or_create(user=request.user, city_name=city_name)
 
-            # Выведем информацию о том, добавился ли город или он уже был
-            print(f"City created: {created}, Favorite city: {favorite_city.city_name}")
-
             if created:
-                message = f'{city_name} добавлен в избранное.'
+                messages.success(request, f'{city_name} добавлен в избранное.')
             else:
-                message = f'{city_name} уже в избранном.'
+                messages.info(request, f'{city_name} уже в избранном.')
 
-            return render(request, 'weather/index.html', {'weather': request.session.get('weather_data'),
-                                                          'message': f'{city_name} добавлен в избранное.'})
+            return redirect('weather')  # Перенаправление на страницу погоды
 
-        return JsonResponse({'status': 'error', 'message': 'Некорректное имя города.'})
+        messages.error(request, 'Некорректное имя города.')
 
-    return JsonResponse({'status': 'error', 'message': 'Некорректный метод запроса.'})
-
+    return redirect('weather')
 
 @login_required
 def remove_favorite_city(request, city_id):
+    """
+    Удаляет город из списка избранных пользователя.
+
+    Параметры:
+        request (HttpRequest): Запрос пользователя.
+        city_id (int): ID города для удаления из избранного.
+
+    Возвращает:
+        HttpResponse: Редирект на страницу с избранными городами.
+    """
     city = get_object_or_404(FavoriteCity, id=city_id, user=request.user)
     city.delete()
     return redirect('favorite_cities')
 
 
-@login_required  # Ограничиваем доступ к странице погоды только для авторизованных пользователей
+@login_required
 def weather_view(request):
+    """
+    Отображает страницу погоды для указанного города.
+
+    При POST-запросе извлекает данные о погоде через API и отображает их пользователю.
+
+    Параметры:
+        request (HttpRequest): Запрос пользователя.
+
+    Возвращает:
+        HttpResponse: Отображает данные о погоде или сообщение об ошибке.
+    """
     weather_data = None
     error = None
 
@@ -104,6 +176,17 @@ def weather_view(request):
 
 @login_required
 def chat_view(request):
+    """
+    Отображает и обрабатывает сообщения чата.
+
+    При POST-запросе сохраняет новое сообщение и отображает все сообщения чата.
+
+    Параметры:
+        request (HttpRequest): Запрос пользователя.
+
+    Возвращает:
+        HttpResponse: Отображает чат с сообщениями.
+    """
     if request.method == 'POST':
         message = request.POST.get('message')
         if message:
