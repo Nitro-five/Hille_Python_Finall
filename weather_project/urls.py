@@ -47,5 +47,6 @@ urlpatterns = [
     path('add-favorite/', views.add_favorite_city, name='add_favorite'),
     path('chat/', views.chat_view, name='chat'),
     path('index/', views.index_view, name='home'),
-]
+    path('statistics/', views.statistics_view, name='statistics'),
 
+]

@@ -20,6 +20,21 @@ class FavoriteCity(models.Model):
         return f"{self.city_name} ({self.user.username})"
 
 
+class SearchStatistic(models.Model):
+    """
+    Модель для хранения данных о поисковых запросах.
+
+    Атрибуты:
+        city_name (CharField): Название города, который искали.
+        search_count (IntegerField): Сколько раз город искали.
+    """
+    city_name = models.CharField(max_length=100, unique=True)
+    search_count = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.city_name} ({self.search_count} запросов)"
+
+
 class ChatMessage(models.Model):
     """
     Модель для хранения сообщений чата.
