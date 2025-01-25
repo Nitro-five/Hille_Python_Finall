@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from .forms import UserRegistrationForm
 import requests
 from django.conf import settings
 from django.contrib import messages
-from .models import FavoriteCity, ChatMessage
+from .models import FavoriteCity, ChatMessage, SearchStatistic
 
 
 def register_view(request):
@@ -191,10 +192,34 @@ def weather_view(request):
                 response = requests.get(url, params=params)
                 response.raise_for_status()
                 weather_data = response.json()
+                search_stat, created = SearchStatistic.objects.get_or_create(city_name=city)
+                search_stat.search_count += 1
+                search_stat.save()
+
+                return render(request, 'weather/index.html', {
+                    'weather': weather_data,  # Передаём погоду в шаблон
+                    'city': city
+                })
             except requests.RequestException as e:
                 error = f"Ошибка запроса к API: {e}"
 
     return render(request, 'weather/index.html', {'weather': weather_data, 'error': error})
+
+
+@login_required
+def statistics_view(request):
+    # Получаем 5 самых популярных городов
+    popular_cities = SearchStatistic.objects.order_by('-search_count')[:5]
+
+    # Получаем количество активных пользователей (например, заходили за последние 24 часа)
+    from django.utils.timezone import now, timedelta
+    active_users_count = User.objects.filter(last_login__gte=now() - timedelta(days=1)).count()
+
+    context = {
+        'popular_cities': popular_cities,
+        'active_users_count': active_users_count,
+    }
+    return render(request, 'weather/statistics.html', context)
 
 
 @login_required
