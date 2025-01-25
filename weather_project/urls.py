@@ -33,7 +33,6 @@ schema_view = get_schema_view(
 Пример документации API доступен по маршруту 'swagger/' и 'redoc/'.
 """
 urlpatterns = [
-
     path('remove-favorite/<int:city_id>/', views.remove_favorite_city, name='remove_favorite'),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('admin/', admin.site.urls),
@@ -42,8 +41,11 @@ urlpatterns = [
     path('register/', views.register_view, name='register'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
-    path('', views.weather_view, name='weather'),
+    path('', views.weather_view, name='weather'),  # Главная страница
     path('favorites/', views.favorite_cities_view, name='favorite_cities'),
+    path('forecast/', views.forecast_view, name='forecast'),
     path('add-favorite/', views.add_favorite_city, name='add_favorite'),
     path('chat/', views.chat_view, name='chat'),
+    path('index/', views.index_view, name='home'),
 ]
+

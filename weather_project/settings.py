@@ -112,6 +112,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://hillepythonfinall-production.up.railway.app',
 ]
 SESSION_COOKIE_HTTPONLY = True
+
 CSRF_COOKIE_HTTPONLY = True
 
 # Password validation
