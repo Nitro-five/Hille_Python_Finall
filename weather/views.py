@@ -29,6 +29,7 @@ def register_view(request):
             return redirect('weather')  # Перенаправление на страницу погоды
     else:
         form = UserRegistrationForm()
+
     return render(request, 'weather/register.html', {'form': form})
 
 
@@ -73,21 +74,42 @@ def logout_view(request):
     return redirect('login')
 
 
-@login_required
-def favorite_cities_view(request):
+def index_view(request):
     """
-    Отображает список любимых городов пользователя.
-
-    Доступно только авторизованным пользователям.
+    Отображает главную страницу сайта.
 
     Параметры:
         request (HttpRequest): Запрос пользователя.
 
     Возвращает:
-        HttpResponse: Отображает список избранных городов.
+        HttpResponse: Отображает главную страницу.
     """
-    favorites = request.user.favorite_cities.all()
-    return render(request, 'weather/favorites.html', {'favorites': favorites})
+    return render(request, 'weather/index.html')
+
+
+@login_required
+def favorite_cities_view(request):
+    """
+    Отображает список избранных городов пользователя.
+
+    Проверяет, авторизован ли пользователь, и если да, отображает его избранные города.
+
+    Параметры:
+        request (HttpRequest): Запрос пользователя.
+
+    Возвращает:
+        HttpResponse: Отображает страницу с избранными городами.
+    """
+    user = request.user
+    if not user.is_authenticated:
+        return redirect('login')
+
+    favorite_cities = user.favorite_cities.all()
+
+    context = {
+        'favorite_cities': favorite_cities,
+    }
+    return render(request, 'weather/favorites.html', context)
 
 
 @login_required
@@ -121,6 +143,7 @@ def add_favorite_city(request):
         messages.error(request, 'Некорректное имя города.')
 
     return redirect('weather')
+
 
 @login_required
 def remove_favorite_city(request, city_id):
@@ -172,6 +195,55 @@ def weather_view(request):
                 error = f"Ошибка запроса к API: {e}"
 
     return render(request, 'weather/index.html', {'weather': weather_data, 'error': error})
+
+
+@login_required
+def forecast_view(request):
+    """
+    Отображает прогноз погоды на несколько дней.
+
+    В зависимости от параметра 'period' отображает прогноз на завтра или на неделю.
+
+    Параметры:
+        request (HttpRequest): Запрос пользователя.
+
+    Возвращает:
+        HttpResponse: Отображает прогноз погоды на выбранный период.
+    """
+    city = request.GET.get('city')
+    period = request.GET.get('period', 'tomorrow')
+
+    try:
+        url = f"http://api.weatherapi.com/v1/forecast.json"
+        params = {
+            "key": settings.WEATHER_API_KEY,
+            "q": city,
+            "days": 7,
+            "lang": "ru",
+        }
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+
+        if period == 'tomorrow':
+            forecast = data['forecast']['forecastday'][1]  # Прогноз на завтра
+        elif period == 'week':
+            forecast = data['forecast']['forecastday']  # Прогноз на неделю
+        else:
+            forecast = None
+
+        context = {
+            'city': city,
+            'forecast': forecast,
+            'period': period,
+        }
+    except (requests.RequestException, KeyError) as e:
+        context = {
+            'city': city,
+            'error': 'Не удалось получить данные о погоде. Пожалуйста, попробуйте снова.',
+        }
+
+    return render(request, 'weather/forecast.html', context)
 
 
 @login_required

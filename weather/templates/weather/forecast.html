@@ -1,0 +1,54 @@
+{% extends 'weather/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">Погода в городе {{ city }}</h2>
+
+    <!-- Форма для выбора периода прогноза -->
+    <form method="get" action="{% url 'forecast' %}" class="text-center mb-4">
+        <input type="hidden" name="city" value="{{ city }}">
+        <button type="submit" name="period" value="tomorrow" class="btn btn-primary me-2">Погода на завтра</button>
+        <button type="submit" name="period" value="week" class="btn btn-secondary">Погода на неделю</button>
+    </form>
+
+    <!-- Отображение прогноза -->
+    {% if forecast %}
+        {% if period == "tomorrow" %}
+        <div class="card text-center">
+            <div class="card-header">
+                Прогноз на завтра
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Дата: {{ forecast.date }}</h5>
+                <p class="card-text">Температура: {{ forecast.day.avgtemp_c }}°C</p>
+                <p class="card-text">Описание: {{ forecast.day.condition.text }}</p>
+                <img src="{{ forecast.day.condition.icon }}" alt="Иконка погоды">
+            </div>
+        </div>
+        {% elif period == "week" %}
+        <div class="card">
+            <div class="card-header text-center">
+                Прогноз на неделю
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for day in forecast %}
+                <li class="list-group-item">
+                    <strong>{{ day.date }}</strong> - {{ day.day.condition.text }}, {{ day.day.avgtemp_c }}°C
+                    <img src="{{ day.day.condition.icon }}" alt="Иконка погоды">
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    {% else %}
+    <div class="alert alert-danger text-center" role="alert">
+        Погода недоступна. Пожалуйста, проверьте ввод и повторите попытку.
+    </div>
+    {% endif %}
+
+    <!-- Кнопка "Назад" -->
+    <div class="text-center mt-4">
+        <a href="{% url 'weather' %}" class="btn btn-link">Назад</a>
+    </div>
+</div>
+{% endblock %}

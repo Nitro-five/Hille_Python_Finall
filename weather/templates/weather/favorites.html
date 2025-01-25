@@ -5,13 +5,16 @@
 <div class="container mt-4">
     <h2>Избранные города</h2>
     <ul class="list-group">
-        {% for city in favorites %}
+        {% for city in favorite_cities %}
         <li class="list-group-item d-flex justify-content-between align-items-center">
             {{ city.city_name }}
-            <a href="{% url 'remove_favorite' city.id %}" class="btn btn-danger btn-sm">Удалить</a>
+            <div class="ml-auto">
+                <a href="{% url 'forecast' %}?city={{ city.city_name }}" class="btn btn-primary">Посмотреть погоду</a>
+                <a href="{% url 'remove_favorite' city.id %}" class="btn btn-danger btn-sm">Удалить</a>
+            </div>
         </li>
         {% empty %}
-        <p>Список избранных городов пуст.</p>
+            <p>Список избранных городов пуст.</p>
         {% endfor %}
     </ul>
 </div>

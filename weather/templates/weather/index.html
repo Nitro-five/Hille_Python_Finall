@@ -5,11 +5,11 @@
 {% block content %}
 <!-- Блок для вывода сообщений -->
 {% if messages %}
-  <ul class="messages">
+<ul class="messages">
     {% for message in messages %}
-      <li class="alert alert-success">{{ message }}</li>
+    <li class="alert alert-success">{{ message }}</li>
     {% endfor %}
-  </ul>
+</ul>
 {% endif %}
 
 <h2>Погода</h2>
@@ -22,6 +22,14 @@
 </form>
 
 {% if weather %}
+
+<div class="actions">
+    <form method="GET" action="{% url 'forecast' %}">
+        <input type="hidden" name="city" value="{{ weather.location.name }}">
+        <button type="submit" name="period" value="tomorrow" class="btn btn-primary">Погода на завтра</button>
+        <button type="submit" name="period" value="week" class="btn btn-secondary">Погода на неделю</button>
+    </form>
+</div>
 <div class="card">
     <div class="card-body">
         <h3 class="card-title">Погода в {{ weather.location.name }}, {{ weather.location.country }}</h3>
